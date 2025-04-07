@@ -1,6 +1,21 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template, redirect, url_for
+import sqlite3
 
 app = Flask(__name__)
+
+# Initialize database
+def init_db():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 # Initialize with some programming languages data
 languages = [
@@ -27,6 +42,8 @@ languages = [
 # Helper function to find language by ID
 def find_language(lang_id):
     return next((lang for lang in languages if lang['id'] == lang_id), None)
+
+# ==================== API Routes ====================
 
 # GET all languages
 @app.route("/api/languages", methods=["GET"])
@@ -96,5 +113,65 @@ def delete_language(lang_id):
     languages = [lang for lang in languages if lang['id'] != lang_id]
     return jsonify({"result": True})
 
+# ==================== User Management Routes ====================
+
+# Home route - displays all users
+@app.route('/')
+def index():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM users')
+    users = cursor.fetchall()
+    conn.close()
+    return render_template('index.html', users=users)
+
+# Add new user
+@app.route('/add', methods=['POST'])
+def add_user():
+    name = request.form['name']
+    email = request.form['email']
+    
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO users (name, email) VALUES (?, ?)', (name, email))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('index'))
+
+# Edit user
+@app.route('/edit/<int:user_id>', methods=['GET', 'POST'])
+def edit_user(user_id):
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET name = ?, email = ? WHERE id = ?', (name, email, user_id))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('index'))
+    
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    conn.close()
+    
+    if user:
+        return render_template('edit.html', user=user)
+    return redirect(url_for('index'))
+
+# Delete user
+@app.route('/delete/<int:user_id>')
+def delete_user(user_id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('index'))
+
 if __name__ == '__main__':
+    init_db()
     app.run(debug=True)

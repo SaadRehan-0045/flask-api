@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit User</title>
+</head>
+<body>
+    <h1>Edit User</h1>
+    <form action="/edit/{{ user[0] }}" method="POST">
+        <input type="text" name="name" value="{{ user[1] }}" required>
+        <input type="email" name="email" value="{{ user[2] }}" required>
+        <button type="submit">Update</button>
+        <a href="/">Cancel</a>
+    </form>
+</body>
+</html>

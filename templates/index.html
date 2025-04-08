@@ -1,43 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>User Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Recommendation</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <style>
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-        form { margin: 20px 0; }
-        input { padding: 6px; margin-right: 10px; }
+        .recipe-card {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            height: 350px;
+        }
+        .recipe-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+        }
+        .recipe-image {
+            max-height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            height: 200px;
+        }
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .form-container {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .form-control:focus {
+            border-color: #5cb85c;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+        }
+        .btn-primary:hover {
+            background-color: #4cae4c;
+            border-color: #398439;
+        }
     </style>
 </head>
 <body>
-    <h1>User Management System</h1>
-    
-    <h2>Add New User</h2>
-    <form action="/add" method="POST">
-        <input type="text" name="name" placeholder="Name" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <button type="submit">Add User</button>
-    </form>
-    
-    <h2>User List</h2>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Actions</th>
-        </tr>
-        {% for user in users %}
-        <tr>
-            <td>{{ user[0] }}</td>
-            <td>{{ user[1] }}</td>
-            <td>{{ user[2] }}</td>
-            <td>
-                <a href="/edit/{{ user[0] }}">Edit</a> | 
-                <a href="/delete/{{ user[0] }}" onclick="return confirm('Are you sure?')">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+    <div class="container">
+        <h1 class="mt-5 text-center">Recipe Recommendation System</h1>
+        <div class="form-container">
+            <form method="post" class="mt-4">
+                <div class="form-group">
+                    <label for="ingredients">Ingredients</label>
+                    <input type="text" class="form-control" id="ingredients" name="ingredients" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Get Recommendations</button>
+            </form>
+        </div>
+
+        {% if recommendations %}
+        <div class="mt-5">
+            <h2>Recommended Recipes</h2>
+            <div class="row">
+                {% for recipe in recommendations %}
+                <div class="col-md-4">
+                    <div class="card recipe-card">
+                        <img class="card-img-top recipe-image" src="{{ recipe['image_url'] }}" alt="{{ recipe['recipe_name'] }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ recipe['recipe_name'] }}</h5>
+                            <p class="card-text">{{ truncate(recipe['ingredients_list'], 100) }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 </body>
 </html>
